@@ -9,6 +9,15 @@ import { ImageWithFallback } from './figma/ImagineWithFallback'
 export function ProjectsSection() {
   const projects = [
     {
+      title: 'Clipso.app',
+      description: 'An intelligent clipboard manager for macOS with AI-powered semantic search. Find clipboard items by meaning, not just keywords, using 100% local, on-device machine learning with zero cloud dependency. Features AES-256-GCM encryption and a privacy-first architecture.',
+      image: 'https://clipso.app/og-image.png',
+      technologies: ['Swift', 'SwiftUI', 'CoreML', 'Core Data', 'NLEmbedding', 'AES-256-GCM'],
+      github: 'https://github.com/dcrivac/Clipso',
+      live: 'https://clipso.app/',
+      featured: true
+    },
+    {
       title: 'E-Commerce Platform',
       description: 'A full-stack e-commerce solution built with Next.js, TypeScript, and Stripe integration. Features include user authentication, product management, and real-time inventory tracking.',
       image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop',
