@@ -18,51 +18,6 @@ export function ProjectsSection() {
       featured: true
     },
     {
-      title: 'E-Commerce Platform',
-      description: 'A full-stack e-commerce solution built with Next.js, TypeScript, and Stripe integration. Features include user authentication, product management, and real-time inventory tracking.',
-      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop',
-      technologies: ['Next.js', 'TypeScript', 'Stripe', 'PostgreSQL'],
-      github: '#',
-      live: '#',
-      featured: true
-    },
-    {
-      title: 'Task Management App',
-      description: 'A collaborative project management tool with real-time updates, drag-and-drop functionality, and team collaboration features.',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop',
-      technologies: ['React', 'Node.js', 'Socket.io', 'MongoDB'],
-      github: '#',
-      live: '#',
-      featured: true
-    },
-    {
-      title: 'Weather Dashboard',
-      description: 'A responsive weather application with location-based forecasts, interactive maps, and data visualization using Chart.js.',
-      image: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=600&h=400&fit=crop',
-      technologies: ['Vue.js', 'Chart.js', 'OpenWeather API', 'Tailwind'],
-      github: '#',
-      live: '#',
-      featured: false
-    },
-    {
-      title: 'Social Media Analytics',
-      description: 'A dashboard for social media analytics with real-time data processing, custom visualizations, and automated reporting.',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop',
-      technologies: ['Python', 'Django', 'React', 'D3.js'],
-      github: '#',
-      live: '#',
-      featured: false
-    },
-    {
-      title: 'AI Chat Interface',
-      description: 'An intelligent chat interface with natural language processing, context awareness, and multi-language support.',
-      image: 'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=600&h=400&fit=crop',
-      technologies: ['React', 'OpenAI API', 'Node.js', 'WebSocket'],
-      github: '#',
-      live: '#',
-      featured: false
-    },
-    {
       title: 'Portfolio Website',
       description: 'A responsive portfolio website with smooth animations, dark theme, and optimized performance built with modern web technologies.',
       image: 'https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&h=400&fit=crop',
@@ -130,7 +85,7 @@ export function ProjectsSection() {
                     </motion.a>
                   </div>
                 </div>
-                
+
                 <div className="p-6">
                   <h3 className="text-xl text-white mb-3 group-hover:text-emerald-400 transition-colors duration-300">
                     {project.title}
@@ -197,7 +152,7 @@ export function ProjectsSection() {
                     </a>
                   </div>
                 </div>
-                
+
                 <div className="p-4">
                   <h4 className="text-lg text-white mb-2 group-hover:text-emerald-400 transition-colors duration-300">
                     {project.title}
@@ -228,8 +183,8 @@ export function ProjectsSection() {
           viewport={{ once: true }}
           className="text-center mt-12"
         >
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 px-8 py-3"
           >
             View All Projects
