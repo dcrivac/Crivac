@@ -21,11 +21,11 @@ export function ProjectsSection() {
     {
       title: 'Portfolio Website',
       description:
-        'A responsive portfolio website with smooth animations, dark theme, and optimized performance built with modern web technologies.',
+        'This very site — a responsive developer portfolio with smooth animations, a dark theme, and optimized performance. Built as a single-page React app and continuously deployed to production on every push.',
       image: 'https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&h=400&fit=crop',
-      technologies: ['Next.js', 'Framer Motion', 'Tailwind', 'TypeScript'],
-      github: '#',
-      live: '#',
+      technologies: ['Vite', 'React', 'TypeScript', 'Tailwind', 'Framer Motion'],
+      github: 'https://github.com/dcrivac/Crivac',
+      live: 'https://www.crivac.com',
       featured: false,
     },
   ]
