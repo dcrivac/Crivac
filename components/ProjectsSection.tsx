@@ -19,6 +19,46 @@ export function ProjectsSection() {
       featured: true,
     },
     {
+      title: 'Yard Picker Pro',
+      description:
+        'AI-powered junkyard profitability analyzer for Pick-Your-Part salvage yards. Paste a yard inventory URL, select cars, and get a ranked pull list — 5 most profitable parts per vehicle with full eBay cost breakdowns and net profit math. No car knowledge needed.',
+      image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
+      technologies: ['PHP', 'JavaScript', 'HTML/CSS', 'eBay API', 'Web Scraping'],
+      github: 'https://github.com/dcrivac/yard-picker-pro',
+      live: 'https://crivac.com/yp2.html',
+      featured: true,
+    },
+    {
+      title: 'MetricPulse',
+      description:
+        'Native iOS app for GrubHub delivery drivers to track Premier tier metrics — On-Time Meals, Same-day Cancellation Rate, and Order Completion Rate — over a rolling 14-day window. Built entirely with first-party Apple frameworks, zero third-party dependencies.',
+      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&h=400&fit=crop',
+      technologies: ['Swift', 'SwiftUI', 'SwiftData', 'iOS'],
+      github: 'https://github.com/dcrivac/MetricPulse',
+      live: 'https://github.com/dcrivac/MetricPulse',
+      featured: false,
+    },
+    {
+      title: 'Route Optimizer',
+      description:
+        'Flutter app that optimizes delivery routes for gig workers on Shipt, DoorDash, and Instacart. Uses Nearest Neighbor + 2-opt algorithms, Google Places autocomplete, and one-tap Google Maps handoff. Supports unlimited stops with time and distance estimates.',
+      image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=400&fit=crop',
+      technologies: ['Flutter', 'Dart', 'Google Maps', 'Google Places', 'Hive', 'Provider'],
+      github: 'https://github.com/dcrivac/Route',
+      live: 'https://github.com/dcrivac/Route',
+      featured: false,
+    },
+    {
+      title: 'AI SEO Writer',
+      description:
+        'Full-suite WordPress content platform for generating, refining, and repurposing SEO articles. Supports OpenAI GPT and Google Gemini, with bulk generation, internal linking via SmartLink, tone controls, and a dark-mode interface built for content teams.',
+      image: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&h=400&fit=crop',
+      technologies: ['PHP', 'WordPress', 'OpenAI API', 'Gemini API', 'JavaScript'],
+      github: 'https://github.com/dcrivac/ai-seo-writer',
+      live: 'https://github.com/dcrivac/ai-seo-writer',
+      featured: false,
+    },
+    {
       title: 'Portfolio Website',
       description:
         'This very site — a responsive developer portfolio with smooth animations, a dark theme, and optimized performance. Built as a single-page React app and continuously deployed to production on every push.',
