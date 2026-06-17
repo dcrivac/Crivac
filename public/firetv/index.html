@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FireControl — iPhone Remote for Fire TV</title>
+  <meta name="description" content="Turn your iPhone into a full Fire TV remote with JBL Bluetooth volume control. Free, open-source, no account required." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #FF6B00;
+      --orange-light: #FF8C3A;
+      --orange-dark: #CC4F00;
+      --bg: #040406;
+      --surface: #0D0D14;
+      --surface-2: #14141E;
+      --border: rgba(255,255,255,0.07);
+      --text: #FFFFFF;
+      --muted: #8888A0;
+      --radius: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ─────────────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: rgba(4, 4, 6, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 17px; letter-spacing: -0.3px;
+      text-decoration: none; color: var(--text);
+    }
+    .nav-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: linear-gradient(135deg, #FF7A00, #CC2200);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .btn-github {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 10px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text); text-decoration: none; font-size: 13px; font-weight: 600;
+      transition: background .2s, border-color .2s;
+    }
+    .btn-github:hover { background: var(--surface); border-color: rgba(255,255,255,0.15); }
+
+    /* ── HERO ────────────────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 100px 24px 60px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 40%, rgba(255,107,0,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 50% 20%, rgba(255,60,0,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 100px;
+      background: rgba(255,107,0,0.12); border: 1px solid rgba(255,107,0,0.25);
+      font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+      color: var(--orange-light); text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-size: clamp(48px, 8vw, 88px);
+      font-weight: 900; letter-spacing: -2.5px; line-height: 1;
+      margin-bottom: 8px;
+    }
+    .hero h1 span { color: var(--orange); }
+    .hero-sub {
+      font-size: clamp(16px, 2.5vw, 22px);
+      color: var(--muted); font-weight: 400; max-width: 560px;
+      margin: 16px auto 40px;
+    }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 72px; }
+    .btn-primary {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 12px;
+      background: var(--orange); color: #000;
+      font-weight: 700; font-size: 15px; text-decoration: none;
+      transition: background .2s, transform .15s;
+    }
+    .btn-primary:hover { background: var(--orange-light); transform: translateY(-1px); }
+    .btn-secondary {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 12px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text); font-weight: 600; font-size: 15px; text-decoration: none;
+      transition: background .2s, transform .15px;
+    }
+    .btn-secondary:hover { background: var(--surface); transform: translateY(-1px); }
+
+    /* ── PHONE MOCKUP ────────────────────────────────────────────────── */
+    .phone-wrap {
+      position: relative; display: flex; justify-content: center;
+      margin-bottom: 24px;
+    }
+    .phone {
+      width: 220px; height: 430px;
+      background: #0A0A0A;
+      border-radius: 42px;
+      border: 2px solid rgba(255,255,255,0.12);
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,0.5),
+        0 40px 80px rgba(0,0,0,0.7),
+        0 0 60px rgba(255,107,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      padding: 14px 12px 20px;
+      display: flex; flex-direction: column; gap: 0;
+      position: relative;
+    }
+    .phone::before {
+      content: '';
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      width: 60px; height: 5px; background: rgba(255,255,255,0.15); border-radius: 3px;
+    }
+    .phone-status {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 6px 6px; font-size: 9px; color: rgba(255,255,255,0.4);
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #22C55E; margin-right: 4px; display: inline-block; }
+    .phone-remote {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: 10px; padding: 4px 0;
+    }
+    /* Top buttons */
+    .remote-top {
+      display: flex; gap: 10px; justify-content: center;
+    }
+    .btn-sm {
+      width: 38px; height: 28px; border-radius: 6px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: rgba(255,255,255,0.7);
+    }
+    /* D-pad */
+    .dpad {
+      width: 110px; height: 110px; position: relative;
+      background: rgba(255,255,255,0.03); border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .dpad-btn {
+      position: absolute; display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; font-size: 9px; color: rgba(255,255,255,0.6);
+    }
+    .dpad-up    { top: 4px;  left: 50%; transform: translateX(-50%); }
+    .dpad-down  { bottom: 4px; left: 50%; transform: translateX(-50%); }
+    .dpad-left  { left: 4px; top: 50%; transform: translateY(-50%); }
+    .dpad-right { right: 4px; top: 50%; transform: translateY(-50%); }
+    .dpad-center {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--orange); opacity: 0.9;
+    }
+    /* Media controls */
+    .remote-media {
+      display: flex; gap: 16px; align-items: center;
+    }
+    .btn-media {
+      width: 32px; height: 22px; border-radius: 5px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: rgba(255,255,255,0.6);
+    }
+    /* Volume */
+    .remote-vol {
+      width: 100%; padding: 6px 4px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 8px; color: var(--muted); text-align: center;
+    }
+    .vol-row { display: flex; align-items: center; gap: 6px; justify-content: center; margin-top: 4px; }
+    .vol-track {
+      flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; position: relative;
+    }
+    .vol-fill {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 60%; background: linear-gradient(to right, var(--orange), var(--orange-light));
+      border-radius: 2px;
+    }
+    .vol-icon { font-size: 9px; color: rgba(255,255,255,0.5); }
+
+    /* ── SECTION COMMON ──────────────────────────────────────────────── */
+    section { padding: 96px 24px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--orange); margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px); font-weight: 800;
+      letter-spacing: -1px; line-height: 1.1; margin-bottom: 16px;
+    }
+    .section-body { font-size: 17px; color: var(--muted); max-width: 560px; }
+
+    /* ── FEATURES ────────────────────────────────────────────────────── */
+    .features { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .features-header { text-align: center; margin-bottom: 64px; }
+    .features-header .section-body { margin: 0 auto; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;
+    }
+    .feature-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 20px;
+      padding: 32px; transition: border-color .25s, transform .2s;
+    }
+    .feature-card:hover { border-color: rgba(255,107,0,0.3); transform: translateY(-2px); }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 14px; margin-bottom: 20px;
+      background: rgba(255,107,0,0.12); border: 1px solid rgba(255,107,0,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .feature-card h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 10px; }
+    .feature-card p { font-size: 15px; color: var(--muted); line-height: 1.65; }
+    .feature-list { list-style: none; margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .feature-list li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; color: var(--muted);
+    }
+    .feature-list li::before {
+      content: '▸'; color: var(--orange); flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* ── SETUP ───────────────────────────────────────────────────────── */
+    .setup-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+    }
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: flex; gap: 20px; align-items: flex-start;
+      padding: 24px 0; border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(255,107,0,0.12); border: 1px solid rgba(255,107,0,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800; color: var(--orange);
+    }
+    .step h4 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .step p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .step code {
+      display: inline-block; padding: 1px 6px; border-radius: 5px;
+      background: rgba(255,255,255,0.07); font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px; color: rgba(255,255,255,0.8);
+    }
+
+    /* Terminal mockup for setup section */
+    .tv-setup {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+      overflow: hidden;
+    }
+    .tv-titlebar {
+      padding: 12px 16px; background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .tv-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .tv-body { padding: 24px; }
+    .tv-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+    }
+    .tv-row:last-child { border-bottom: none; }
+    .tv-label { color: var(--muted); }
+    .tv-value { font-weight: 600; }
+    .pill {
+      display: inline-block; padding: 3px 10px; border-radius: 100px;
+      font-size: 11px; font-weight: 700;
+    }
+    .pill-green { background: rgba(34,197,94,0.12); color: #22C55E; border: 1px solid rgba(34,197,94,0.2); }
+    .pill-orange { background: rgba(255,107,0,0.12); color: var(--orange-light); border: 1px solid rgba(255,107,0,0.2); }
+
+    /* ── REQUIREMENTS ────────────────────────────────────────────────── */
+    .reqs { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .reqs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .req-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 14px;
+      padding: 24px; display: flex; gap: 16px; align-items: flex-start;
+    }
+    .req-icon { font-size: 28px; flex-shrink: 0; }
+    .req-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .req-card p { font-size: 13px; color: var(--muted); }
+
+    /* ── CTA ─────────────────────────────────────────────────────────── */
+    .cta {
+      text-align: center; padding: 96px 24px;
+      background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(255,107,0,0.07) 0%, transparent 70%);
+    }
+    .cta h2 { font-size: clamp(28px, 4vw, 48px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+    .cta p { font-size: 17px; color: var(--muted); margin-bottom: 40px; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+    /* ── FOOTER ──────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    /* ── SVG ICONS ───────────────────────────────────────────────────── */
+    .icon { width: 16px; height: 16px; fill: currentColor; }
+
+    @media (max-width: 768px) {
+      nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+      .setup-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 12px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="nav-icon">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="9.5" r="6" stroke="white" stroke-width="2" stroke-linecap="round"
+          stroke-dasharray="30" stroke-dashoffset="7.5"/>
+        <line x1="9" y1="3.5" x2="9" y2="9.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    FireControl
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#setup">Setup</a>
+    <a href="#requirements">Requirements</a>
+    <a href="https://github.com/dcrivac/FireControl" class="btn-github" target="_blank">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">⚡ Free &amp; Open Source</div>
+  <h1>Fire<span>Control</span></h1>
+  <p class="hero-sub">Turn your iPhone into a full remote for your Fire TV Stick — plus JBL Bluetooth speaker volume control, all in one app.</p>
+  <div class="hero-actions">
+    <a href="https://github.com/dcrivac/FireControl" class="btn-primary" target="_blank">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+      View on GitHub
+    </a>
+    <a href="#setup" class="btn-secondary">
+      How to set up →
+    </a>
+  </div>
+
+  <!-- Phone mockup -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="phone-status">
+        <span><span class="status-dot"></span>Living Room TV</span>
+        <span>Connected</span>
+      </div>
+      <div class="phone-remote">
+        <div class="remote-top">
+          <div class="btn-sm">⌂</div>
+          <div class="btn-sm">←</div>
+          <div class="btn-sm">☰</div>
+          <div class="btn-sm">🎙</div>
+        </div>
+        <div class="dpad">
+          <div class="dpad-btn dpad-up">▲</div>
+          <div class="dpad-btn dpad-left">◀</div>
+          <div class="dpad-center"></div>
+          <div class="dpad-btn dpad-right">▶</div>
+          <div class="dpad-btn dpad-down">▼</div>
+        </div>
+        <div class="remote-media">
+          <div class="btn-media">⏮</div>
+          <div class="btn-media" style="width:38px;background:rgba(255,107,0,0.15);border-color:rgba(255,107,0,0.3)">⏯</div>
+          <div class="btn-media">⏭</div>
+        </div>
+        <div class="remote-vol">
+          <div style="margin-bottom:4px;color:rgba(255,255,255,0.3);font-size:8px">TV VOLUME</div>
+          <div class="vol-row">
+            <span class="vol-icon">🔉</span>
+            <div class="vol-track"><div class="vol-fill" style="width:45%"></div></div>
+            <span class="vol-icon">🔊</span>
+          </div>
+          <div style="margin-top:8px;margin-bottom:4px;color:rgba(255,255,255,0.3);font-size:8px">JBL CLIP 4</div>
+          <div class="vol-row">
+            <span class="vol-icon">🔉</span>
+            <div class="vol-track"><div class="vol-fill" style="width:70%;background:linear-gradient(to right,#3B82F6,#60A5FA)"></div></div>
+            <span class="vol-icon">🔊</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="features-header">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Everything on one screen</h2>
+      <p class="section-body">Full Fire TV navigation and Bluetooth speaker control without switching apps or picking up a second remote.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📺</div>
+        <h3>Complete Fire TV Control</h3>
+        <p>All the buttons from your physical remote, reimagined for iPhone. Navigate, play, and explore without digging between cushions.</p>
+        <ul class="feature-list">
+          <li>D-pad with long-press repeat for fast scrolling</li>
+          <li>Home, Back, Menu, Alexa mic</li>
+          <li>Play/Pause, Rewind, Fast-Forward</li>
+          <li>TV volume Up, Down, and Mute</li>
+          <li>Connects over your home Wi-Fi via ADB</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔊</div>
+        <h3>JBL Bluetooth Volume</h3>
+        <p>When your JBL Clip 4 (or any Bluetooth speaker) is connected, a live system volume slider appears — no separate controls needed.</p>
+        <ul class="feature-list">
+          <li>Real iOS system volume slider — actually works</li>
+          <li>Live percentage readout</li>
+          <li>Shows connected Bluetooth device name</li>
+          <li>Automatically appears when BT audio is active</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Fast &amp; Lightweight</h3>
+        <p>Built natively in Swift with zero third-party dependencies. No subscriptions, no accounts, no cloud — just your iPhone and your TV on the same Wi-Fi.</p>
+        <ul class="feature-list">
+          <li>Connects in under a second</li>
+          <li>Remembers your Fire TV — no re-setup on relaunch</li>
+          <li>Dark OLED UI — easy on the eyes at night</li>
+          <li>Open source — inspect every line</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3>Secure &amp; Private</h3>
+        <p>Authentication uses RSA-2048 signing — the same protocol as the official ADB toolchain. Your private key is stored in the iOS Keychain. Nothing leaves your local network.</p>
+        <ul class="feature-list">
+          <li>First-launch "Allow" prompt on Fire TV</li>
+          <li>Subsequent launches skip the prompt automatically</li>
+          <li>No internet access required after setup</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="setup">
+  <div class="container">
+    <div class="setup-grid">
+      <div>
+        <div class="section-label">Setup</div>
+        <h2 class="section-title">Ready in four steps</h2>
+        <p class="section-body" style="margin-bottom:40px">One-time setup on the Fire TV. After that, the app connects instantly every time.</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <h4>Enable Developer Options</h4>
+              <p>On your Fire TV: <code>Settings → My Fire TV → About</code> → tap <strong>Build</strong> seven times until you see "You are now a developer."</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>
+              <h4>Turn on ADB Debugging</h4>
+              <p>Go to <code>Settings → My Fire TV → Developer Options</code> and set <strong>ADB Debugging: ON</strong>.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>
+              <h4>Find your Fire TV's IP</h4>
+              <p><code>Settings → My Fire TV → About → Network</code> — note the IP address (e.g. 192.168.1.45).</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div>
+              <h4>Connect in FireControl</h4>
+              <p>Open the app, enter the IP, tap Connect. The first time, your Fire TV will ask to <strong>Allow</strong> — select <em>"Always allow from this device"</em>. Done.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="tv-setup">
+          <div class="tv-titlebar">
+            <div class="tv-dot" style="background:#FF5F57"></div>
+            <div class="tv-dot" style="background:#FEBC2E"></div>
+            <div class="tv-dot" style="background:#28C840"></div>
+            <span style="margin-left:8px;font-size:12px;color:var(--muted)">Fire TV — Developer Options</span>
+          </div>
+          <div class="tv-body">
+            <div class="tv-row">
+              <span class="tv-label">ADB Debugging</span>
+              <span class="pill pill-green">ON</span>
+            </div>
+            <div class="tv-row">
+              <span class="tv-label">Apps from Unknown Sources</span>
+              <span class="tv-value" style="color:var(--muted)">Optional</span>
+            </div>
+            <div class="tv-row">
+              <span class="tv-label">Network IP</span>
+              <span class="tv-value" style="font-family:monospace;font-size:13px">192.168.1.45</span>
+            </div>
+            <div class="tv-row">
+              <span class="tv-label">ADB Port</span>
+              <span class="tv-value" style="font-family:monospace;font-size:13px">5555</span>
+            </div>
+            <div class="tv-row">
+              <span class="tv-label">FireControl Status</span>
+              <span class="pill pill-orange">Always Allowed</span>
+            </div>
+          </div>
+        </div>
+        <p style="margin-top:16px;font-size:13px;color:var(--muted);text-align:center">
+          iPhone and Fire TV must be on the same Wi-Fi network
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REQUIREMENTS -->
+<section class="reqs" id="requirements">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:56px">
+      <div class="section-label">Requirements</div>
+      <h2 class="section-title">What you need</h2>
+    </div>
+    <div class="reqs-grid">
+      <div class="req-card">
+        <div class="req-icon">📱</div>
+        <div>
+          <h4>iPhone</h4>
+          <p>iOS 17 or later. Side-loaded via Xcode or AltStore — not on the App Store yet.</p>
+        </div>
+      </div>
+      <div class="req-card">
+        <div class="req-icon">📺</div>
+        <div>
+          <h4>Amazon Fire TV Stick 4K</h4>
+          <p>Any Fire TV device that supports ADB networking (most do). Stick 4K and Stick 4K Max confirmed.</p>
+        </div>
+      </div>
+      <div class="req-card">
+        <div class="req-icon">📡</div>
+        <div>
+          <h4>Same Wi-Fi Network</h4>
+          <p>Your iPhone and Fire TV must be connected to the same local network. No internet required after setup.</p>
+        </div>
+      </div>
+      <div class="req-card">
+        <div class="req-icon">🔊</div>
+        <div>
+          <h4>Bluetooth Speaker (optional)</h4>
+          <p>Any Bluetooth A2DP speaker paired to your iPhone — JBL Clip 4, Sony, Bose, etc. The volume slider appears automatically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="container">
+    <h2>Open source &amp; free, forever.</h2>
+    <p>Clone it, build it in Xcode, run it on your phone. No App Store, no account, no catch.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="https://github.com/dcrivac/FireControl" class="btn-primary" target="_blank">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+        View Source on GitHub
+      </a>
+      <a href="/" class="btn-secondary">← Back to crivac.com</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>Built by <a href="/">David Crivac</a></span>
+  <span>FireControl &bull; Free &amp; Open Source</span>
+  <a href="https://github.com/dcrivac/FireControl" target="_blank">GitHub ↗</a>
+</footer>
+
+</body>
+</html>
