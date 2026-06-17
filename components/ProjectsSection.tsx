@@ -49,6 +49,16 @@ export function ProjectsSection() {
       featured: false,
     },
     {
+      title: 'FireControl',
+      description:
+        'Native iOS app that turns an iPhone into a full Fire TV Stick remote over ADB Wi-Fi, plus live JBL Bluetooth speaker volume control. Implements the ADB wire protocol from scratch in Swift — RSA-2048 auth, persistent shell streams, and Keychain key storage.',
+      image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f4834c?w=600&h=400&fit=crop',
+      technologies: ['Swift', 'SwiftUI', 'SwiftData', 'ADB', 'Network', 'AVFoundation'],
+      github: 'https://github.com/dcrivac/FireControl',
+      live: 'https://crivac.com/firetv',
+      featured: false,
+    },
+    {
       title: 'AI SEO Writer',
       description:
         'Full-suite WordPress content platform for generating, refining, and repurposing SEO articles. Supports OpenAI GPT and Google Gemini, with bulk generation, internal linking via SmartLink, tone controls, and a dark-mode interface built for content teams.',
