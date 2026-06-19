@@ -12,7 +12,7 @@ export function ProjectsSection() {
       title: 'Clipso.app',
       description:
         'An intelligent clipboard manager for macOS with AI-powered semantic search. Find clipboard items by meaning, not just keywords, using 100% local, on-device machine learning with zero cloud dependency. Features AES-256-GCM encryption and a privacy-first architecture.',
-      image: 'https://clipso.app/og-image.png',
+      image: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=600&h=400&fit=crop',
       technologies: ['Swift', 'SwiftUI', 'CoreML', 'Core Data', 'NLEmbedding', 'AES-256-GCM'],
       github: 'https://github.com/dcrivac/Clipso',
       live: 'https://clipso.app/',
