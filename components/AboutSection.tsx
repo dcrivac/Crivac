@@ -55,7 +55,7 @@ export function AboutSection() {
               Passionate about creating digital experiences that matter
             </h3>
             <p className="leading-relaxed text-gray-300">
-              With over 5 years of experience in web development, I've had the privilege of working
+              With over  10 years of experience in web development, I've had the privilege of working
               with startups and established companies to bring their digital visions to life. My
               journey began with a curiosity about how websites work, and it has evolved into a
               passion for creating seamless, performant applications.
