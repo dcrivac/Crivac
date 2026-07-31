@@ -32,6 +32,6 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          local_path: ./dist/*
+          local_path: ./dist/
           remote_path: ${{ secrets.REMOTE_PATH }}
           sftp_only: true
