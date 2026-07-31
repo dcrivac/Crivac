@@ -42,7 +42,7 @@ jobs:
           fi
 
           # Write key to file preserving newlines
-          printf '%s\n' "$SSH_KEY" > deploy_key
+          printf '%s\n' "$SSH_PRIVATE_KEY" > deploy_key
           chmod 600 deploy_key
 
           # Normalize CRLF -> LF if present
