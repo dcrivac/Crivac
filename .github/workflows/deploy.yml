@@ -28,6 +28,22 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Start SSH agent and add private key
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SFTP_PRIVATE_KEY }}
+
+      - name: Ensure host is known
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.SFTP_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Run SFTP/SSH commands
+        run: |
+          sftp -o BatchMode=yes -o StrictHostKeyChecking=yes "${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }}" <<'EOF'
+          quit
+          EOF
+          
       - name: Deploy to SiteGround via SFTP
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
@@ -38,3 +54,5 @@ jobs:
           local_path: ./dist/
           remote_path: ${{ secrets.REMOTE_PATH }}
           sftp_only: true
+
+      
