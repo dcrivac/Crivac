@@ -53,8 +53,13 @@ jobs:
 
       - name: Ensure host is known
         run: |
+          set -euo pipefail
           mkdir -p ~/.ssh
-          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+            echo "Error: SSH_HOST secret is not set" >&2
+            exit 1
+          fi
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts || true
 
       - name: Run SFTP/SSH commands
         run: |
