@@ -28,10 +28,30 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Start SSH agent and add private key
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: ${{ secrets.SFTP_PRIVATE_KEY }}
+      - name: Prepare and add SSH key (remove passphrase if provided)
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+
+          # Choose the private key from secrets. Prefer SSH_PRIVATE_KEY, fall back to SFTP_PRIVATE_KEY.
+          if [ -n "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > deploy_key
+          elif [ -n "${{ secrets.SFTP_PRIVATE_KEY }}" ]; then
+            printf '%s\n' "${{ secrets.SFTP_PRIVATE_KEY }}" > deploy_key
+          else
+            echo "No SSH_PRIVATE_KEY or SFTP_PRIVATE_KEY secret found" >&2
+            exit 1
+          fi
+
+          chmod 600 deploy_key
+
+          # If a passphrase is stored in SSH_KEY_PASSPHRASE, remove it so ssh-add won't prompt.
+          if [ -n "${{ secrets.SSH_KEY_PASSPHRASE }}" ]; then
+            ssh-keygen -p -P "${{ secrets.SSH_KEY_PASSPHRASE }}" -N "" -f deploy_key
+          fi
+
+          eval "$(ssh-agent -s)"
+          ssh-add deploy_key
 
       - name: Ensure host is known
         run: |
@@ -54,5 +74,3 @@ jobs:
           local_path: ./dist/
           remote_path: ${{ secrets.REMOTE_PATH }}
           sftp_only: true
-
-      
