@@ -32,6 +32,9 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_PASSPHRASE: ${{ secrets.SSH_KEY_PASSPHRASE }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
@@ -42,31 +45,31 @@ jobs:
           fi
 
           # Write key to file preserving newlines
-          printf '%s\n' "$SSH_PRIVATE_KEY" > deploy_key
-          chmod 600 deploy_key
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
 
           # Normalize CRLF -> LF if present
-          if grep -q $'\r' deploy_key 2>/dev/null || file deploy_key | grep -q CRLF; then
+          if grep -q $'\r' ~/.ssh/deploy_key 2>/dev/null || file ~/.ssh/deploy_key | grep -q CRLF; then
             echo "Converting CRLF -> LF in deploy_key"
             apt-get update -y && apt-get install -y dos2unix openssh-client || true
-            dos2unix deploy_key || true
+            dos2unix ~/.ssh/deploy_key || true
           fi
 
           # Start ssh-agent
           eval "$(ssh-agent -s)"
 
-          # If a passphrase is provided in SSH_KEY_PASSPHRASE, try removing it (non-interactive)
+          # If a passphrase is provided, try removing it non-interactively
           if [ -n "${SSH_PASSPHRASE:-}" ]; then
-            ssh-keygen -p -P "$SSH_PASSPHRASE" -N "" -f deploy_key || true
+            ssh-keygen -p -P "$SSH_PASSPHRASE" -N "" -f ~/.ssh/deploy_key || true
           fi
 
           # Try to add key; if ssh-add fails with libcrypto errors, convert key format to PEM and retry
           TMPERR=/tmp/ssh-add.err
-          if ! ssh-add deploy_key 2>"$TMPERR"; then
+          if ! ssh-add ~/.ssh/deploy_key 2>"$TMPERR"; then
             echo "ssh-add failed, attempting conversion to PEM and retrying"
             # Convert to PEM (useful when key is in new OpenSSH format)
-            ssh-keygen -p -P "${SSH_PASSPHRASE:-}" -N "" -m PEM -f deploy_key || true
-            if ! ssh-add deploy_key 2>"$TMPERR"; then
+            ssh-keygen -p -P "${SSH_PASSPHRASE:-}" -N "" -m PEM -f ~/.ssh/deploy_key || true
+            if ! ssh-add ~/.ssh/deploy_key 2>"$TMPERR"; then
               echo "ssh-add still failed; showing ssh-add output:" >&2
               sed -n '1,200p' "$TMPERR" >&2 || true
               exit 1
@@ -75,27 +78,63 @@ jobs:
           rm -f "$TMPERR"
 
       - name: Ensure host is known
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
-          if [ -z "${{ secrets.SSH_HOST }}" ]; then
+          if [ -z "${SSH_HOST:-}" ]; then
             echo "Error: SSH_HOST secret is not set" >&2
             exit 1
           fi
-          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts || true
+
+          # Use ssh-keyscan to fetch remote host keys. When using a non-standard port, format entries as [host]:port
+          PORT=${SSH_PORT:-22}
+          if [ "$PORT" = "" ]; then PORT=22; fi
+
+          if [ "$PORT" = "22" ]; then
+            ssh-keyscan -t rsa,ecdsa,ed25519 "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          else
+            ssh-keyscan -p "$PORT" -t rsa,ecdsa,ed25519 "$SSH_HOST" 2>/dev/null | sed "s/^${SSH_HOST}/[${SSH_HOST}]:${PORT}/" >> ~/.ssh/known_hosts || true
+          fi
+          chmod 644 ~/.ssh/known_hosts || true
 
       - name: Test SSH connection
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SSH_HOST:-}" ]; then
+            echo "Error: SSH_HOST secret is not set" >&2
+            exit 1
+          fi
+          if [ -z "${SSH_USERNAME:-}" ]; then
+            echo "Error: SSH_USERNAME secret is not set" >&2
+            exit 1
+          fi
+
+          PORT_OPT=""
+          if [ -n "${SSH_PORT:-}" ]; then
+            PORT_OPT="-p ${SSH_PORT}"
+          fi
+
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK'
+
+      - name: Run SFTP/SSH commands
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
           set -euo pipefail
           PORT_OPT=""
-          if [ -n "${{ secrets.SSH_PORT }}" ]; then
-            PORT_OPT="-p ${{ secrets.SSH_PORT }}"
+          if [ -n "${SSH_PORT:-}" ]; then
+            PORT_OPT="-oPort=${SSH_PORT}"
           fi
-          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10 $PORT_OPT "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" 'echo SSH_CONNECTION_OK'
-
-      - name: Run SFTP/SSH commands
-        run: |
-          sftp -o BatchMode=yes -o StrictHostKeyChecking=yes "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" <<'EOF'
+          sftp -o BatchMode=yes -o StrictHostKeyChecking=yes $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" <<'EOF'
           quit
           EOF
           
