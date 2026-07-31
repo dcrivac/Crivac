@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -60,6 +60,16 @@ jobs:
             exit 1
           fi
           ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts || true
+
+      - name: Test SSH connection
+        run: |
+          set -euo pipefail
+          # Use the deploy_key or ssh-agent; prefer ssh-agent (ssh-add ran earlier). Add a short timeout and fail fast if connection fails.
+          PORT_OPT=""
+          if [ -n "${{ secrets.SSH_PORT }}" ]; then
+            PORT_OPT="-p ${{ secrets.SSH_PORT }}"
+          fi
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10 $PORT_OPT "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}" 'echo SSH_CONNECTION_OK'
 
       - name: Run SFTP/SSH commands
         run: |
