@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -31,7 +32,6 @@ jobs:
       - name: Prepare and add SSH key
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_PASSPHRASE: ${{ secrets.SSH_KEY_PASSPHRASE }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
@@ -58,17 +58,12 @@ jobs:
           # Start ssh-agent
           eval "$(ssh-agent -s)"
 
-          # If a passphrase is provided, try removing it non-interactively
-          if [ -n "${SSH_PASSPHRASE:-}" ]; then
-            ssh-keygen -p -P "$SSH_PASSPHRASE" -N "" -f ~/.ssh/deploy_key || true
-          fi
-
           # Try to add key; if ssh-add fails with libcrypto errors, convert key format to PEM and retry
           TMPERR=/tmp/ssh-add.err
           if ! ssh-add ~/.ssh/deploy_key 2>"$TMPERR"; then
             echo "ssh-add failed, attempting conversion to PEM and retrying"
-            # Convert to PEM (useful when key is in new OpenSSH format)
-            ssh-keygen -p -P "${SSH_PASSPHRASE:-}" -N "" -m PEM -f ~/.ssh/deploy_key || true
+            # Convert to PEM (useful when key is in new OpenSSH format); assumes unencrypted key for CI
+            ssh-keygen -p -N "" -m PEM -f ~/.ssh/deploy_key || true
             if ! ssh-add ~/.ssh/deploy_key 2>"$TMPERR"; then
               echo "ssh-add still failed; showing ssh-add output:" >&2
               sed -n '1,200p' "$TMPERR" >&2 || true
@@ -99,6 +94,25 @@ jobs:
             ssh-keyscan -p "$PORT" -t rsa,ecdsa,ed25519 "$SSH_HOST" 2>/dev/null | sed "s/^${SSH_HOST}/[${SSH_HOST}]:${PORT}/" >> ~/.ssh/known_hosts || true
           fi
           chmod 644 ~/.ssh/known_hosts || true
+
+      - name: Debug SSH (manual runs only)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+        run: |
+          set -euo pipefail
+          echo "--- known_hosts ---"
+          ls -l ~/.ssh || true
+          sed -n '1,200p' ~/.ssh/known_hosts || true
+          echo "--- ssh verbose connect ---"
+          PORT_OPT=""
+          if [ -n "${SSH_PORT:-}" ]; then
+            PORT_OPT="-p ${SSH_PORT}"
+          fi
+          # Run a verbose SSH connection once to capture handshake details for troubleshooting
+          ssh -vvv -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK' || true
 
       - name: Test SSH connection
         env:
