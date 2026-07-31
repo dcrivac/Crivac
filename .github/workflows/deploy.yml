@@ -35,3 +35,33 @@ jobs:
           local_path: ./dist/*
           remote_path: ${{ secrets.REMOTE_PATH }}
           sftp_only: true
+
+          - name: SiteGround Cache Manager
+  # You may pin to the exact commit or the version.
+  # uses: fkwdigital/github-workflow-action-siteground-cache@02b76a1285df9f1780b346e80f29bce725bc113e
+  uses: fkwdigital/github-workflow-action-siteground-cache@v1
+  with:
+    # Operation mode: 'ssh' (default, shared hosting via SG Optimizer + WP-CLI) or 'api' (agency-tier Site Tools API)
+    MODE: # optional, default is ssh
+    # Cache to purge: 'all' (default), 'dynamic' (NGINX/SG Optimizer), or 'memcached' (WP object cache)
+    CACHE_TYPE: # optional, default is all
+    # [ssh] Private key contents. Required when MODE=ssh.
+    SSH_PRIVATE_KEY: # optional
+    # [ssh] Passphrase for the SSH private key (required by SiteGround for keys created in Site Tools)
+    SSH_PASSPHRASE: # optional
+    # [ssh] Contents of ~/.ssh/known_hosts for the remote server. Obtain via: ssh-keyscan -H -p 18765 your-host. Strongly recommended.
+    KNOWN_HOSTS: # optional
+    # [ssh] SSH host (SiteGround server hostname or IP). Required when MODE=ssh.
+    REMOTE_HOST: # optional
+    # [ssh] SSH username (your SiteGround SSH user). Required when MODE=ssh.
+    REMOTE_USER: # optional
+    # [ssh] SSH port (SiteGround default is 18765)
+    REMOTE_PORT: # optional, default is 18765
+    # [ssh] Absolute path to the WordPress install on the server (e.g. /home/customer/www/example.com/public_html). Required when MODE=ssh.
+    REMOTE_PATH: # optional
+    # [api] OAuth bearer token for the SiteGround Site Tools API. Required when MODE=api.
+    SITEGROUND_API_TOKEN: # optional
+    # [api] Site ID from Site Tools. Required when MODE=api.
+    SITEGROUND_SITE_ID: # optional
+    # [api] API base URL (override only if SiteGround changes endpoints)
+    SITEGROUND_API_BASE: # optional, default is https://api.siteground.com/v00
