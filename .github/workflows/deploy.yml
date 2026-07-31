@@ -36,7 +36,7 @@ jobs:
           set -euo pipefail
           mkdir -p ~/.ssh
 
-          if [ -z "${SSH_KEY:-}" ]; then
+          if [ -z "${SSH_PRIVATE_KEY:-}" ]; then
             echo "No SSH_PRIVATE_KEY secret found" >&2
             exit 1
           fi
