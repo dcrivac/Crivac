@@ -28,28 +28,51 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Prepare and add SSH key (remove passphrase if provided)
+      - name: Prepare and add SSH key (robust: normalize, set perms, convert if needed)
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PASSPHRASE: ${{ secrets.SSH_KEY_PASSPHRASE }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
 
-          # Use SSH_PRIVATE_KEY secret only (standardized)
-          if [ -n "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > deploy_key
-          else
+          if [ -z "${SSH_KEY:-}" ]; then
             echo "No SSH_PRIVATE_KEY secret found" >&2
             exit 1
           fi
 
+          # Write key to file preserving newlines
+          printf '%s\n' "$SSH_KEY" > deploy_key
           chmod 600 deploy_key
 
-          # If a passphrase is stored in SSH_KEY_PASSPHRASE, remove it so ssh-add won't prompt.
-          if [ -n "${{ secrets.SSH_KEY_PASSPHRASE }}" ]; then
-            ssh-keygen -p -P "${{ secrets.SSH_KEY_PASSPHRASE }}" -N "" -f deploy_key
+          # Normalize CRLF -> LF if present
+          if grep -q $'\r' deploy_key 2>/dev/null || file deploy_key | grep -q CRLF; then
+            echo "Converting CRLF -> LF in deploy_key"
+            apt-get update -y && apt-get install -y dos2unix openssh-client || true
+            dos2unix deploy_key || true
           fi
 
+          # Start ssh-agent
           eval "$(ssh-agent -s)"
-          ssh-add deploy_key
+
+          # If a passphrase is provided in SSH_KEY_PASSPHRASE, try removing it (non-interactive)
+          if [ -n "${SSH_PASSPHRASE:-}" ]; then
+            ssh-keygen -p -P "$SSH_PASSPHRASE" -N "" -f deploy_key || true
+          fi
+
+          # Try to add key; if ssh-add fails with libcrypto errors, convert key format to PEM and retry
+          TMPERR=/tmp/ssh-add.err
+          if ! ssh-add deploy_key 2>"$TMPERR"; then
+            echo "ssh-add failed, attempting conversion to PEM and retrying"
+            # Convert to PEM (useful when key is in new OpenSSH format)
+            ssh-keygen -p -P "${SSH_PASSPHRASE:-}" -N "" -m PEM -f deploy_key || true
+            if ! ssh-add deploy_key 2>"$TMPERR"; then
+              echo "ssh-add still failed; showing ssh-add output:" >&2
+              sed -n '1,200p' "$TMPERR" >&2 || true
+              exit 1
+            fi
+          fi
+          rm -f "$TMPERR"
 
       - name: Ensure host is known
         run: |
@@ -64,7 +87,6 @@ jobs:
       - name: Test SSH connection
         run: |
           set -euo pipefail
-          # Use the deploy_key or ssh-agent; prefer ssh-agent (ssh-add ran earlier). Add a short timeout and fail fast if connection fails.
           PORT_OPT=""
           if [ -n "${{ secrets.SSH_PORT }}" ]; then
             PORT_OPT="-p ${{ secrets.SSH_PORT }}"
