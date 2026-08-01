@@ -41,22 +41,22 @@ jobs:
           fi
 
           # Write key to file preserving newlines and strict permissions
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
 
           # Normalize CRLF -> LF if present (install dos2unix only if needed)
-          if grep -q $'\r' ~/.ssh/deploy_key 2>/dev/null || file ~/.ssh/deploy_key | grep -q CRLF; then
-            echo "Converting CRLF -> LF in deploy_key"
+          if grep -q $'\r' ~/.ssh/id_deploy 2>/dev/null || file ~/.ssh/id_deploy | grep -q CRLF; then
+            echo "Converting CRLF -> LF in id_deploy"
             if ! command -v dos2unix >/dev/null 2>&1; then
               sudo apt-get update -y
               sudo apt-get install -y dos2unix openssh-client || true
             fi
-            dos2unix ~/.ssh/deploy_key || true
+            dos2unix ~/.ssh/id_deploy || true
           fi
 
           # If the key is in the new OpenSSH private-key format and later SSH fails,
           # we'll attempt conversion in-place during debugging steps (but avoid ssh-add).
-          ls -l ~/.ssh/deploy_key
+          ls -l ~/.ssh/id_deploy
 
       - name: Ensure host is known
         env:
@@ -98,7 +98,7 @@ jobs:
             PORT_OPT="-p ${SSH_PORT}"
           fi
           # Use the identity file directly to avoid ssh-agent/ssh-add issues
-          ssh -vvv -i ~/.ssh/deploy_key -oBatchMode=yes -oStrictHostKeyChecking=yes -oConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK' || true
+          ssh -vvv -i ~/.ssh/id_deploy -oBatchMode=yes -oStrictHostKeyChecking=yes -oConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK' || true
 
       - name: Test SSH connection
         env:
@@ -122,7 +122,7 @@ jobs:
           fi
 
           # Use the identity file directly
-          ssh -i ~/.ssh/deploy_key -oBatchMode=yes -oStrictHostKeyChecking=yes -oConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK'
+          ssh -i ~/.ssh/id_deploy -oBatchMode=yes -oStrictHostKeyChecking=yes -oConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK'
 
       - name: Run SFTP/SSH commands
         env:
@@ -136,7 +136,7 @@ jobs:
             # sftp doesn't accept -i on some versions; pass via -oIdentityFile
             PORT_OPT="-oPort=${SSH_PORT}"
           fi
-          sftp -oIdentityFile=~/.ssh/deploy_key -oBatchMode=yes -oStrictHostKeyChecking=yes $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" <<'EOF'
+          sftp -oIdentityFile=~/.ssh/id_deploy -oBatchMode=yes -oStrictHostKeyChecking=yes $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" <<'EOF'
           quit
           EOF
 
@@ -149,4 +149,4 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           local_path: ./dist/
           remote_path: ${{ secrets.REMOTE_PATH }}
-          sftp_only: false
+          sftp_only: true
