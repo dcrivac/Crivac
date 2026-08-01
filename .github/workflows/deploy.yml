@@ -149,4 +149,4 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           local_path: ./dist/
           remote_path: ${{ secrets.REMOTE_PATH }}
-          sftp_only: true
+          sftp_only: false
