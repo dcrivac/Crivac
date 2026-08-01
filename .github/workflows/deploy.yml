@@ -29,48 +29,34 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Prepare and add SSH key
+      - name: Prepare SSH key (write identity file, normalize)
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
-
           if [ -z "${SSH_PRIVATE_KEY:-}" ]; then
             echo "No SSH_PRIVATE_KEY secret found" >&2
             exit 1
           fi
 
-          # Write key to file preserving newlines
+          # Write key to file preserving newlines and strict permissions
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
-          # Normalize CRLF -> LF if present
+          # Normalize CRLF -> LF if present (install dos2unix only if needed)
           if grep -q $'\r' ~/.ssh/deploy_key 2>/dev/null || file ~/.ssh/deploy_key | grep -q CRLF; then
             echo "Converting CRLF -> LF in deploy_key"
-            apt-get update -y && apt-get install -y dos2unix openssh-client || true
+            if ! command -v dos2unix >/dev/null 2>&1; then
+              sudo apt-get update -y
+              sudo apt-get install -y dos2unix openssh-client || true
+            fi
             dos2unix ~/.ssh/deploy_key || true
           fi
 
-          # Start ssh-agent
-          eval "$(ssh-agent -s)"
-
-          # Try to add key; if ssh-add fails with libcrypto errors, convert key format to PEM and retry
-          TMPERR=/tmp/ssh-add.err
-          if ! ssh-add ~/.ssh/deploy_key 2>"$TMPERR"; then
-            echo "ssh-add failed, attempting conversion to PEM and retrying"
-            # Convert to PEM (useful when key is in new OpenSSH format); assumes unencrypted key for CI
-            ssh-keygen -p -N "" -m PEM -f ~/.ssh/deploy_key || true
-            if ! ssh-add ~/.ssh/deploy_key 2>"$TMPERR"; then
-              echo "ssh-add still failed; showing ssh-add output:" >&2
-              sed -n '1,200p' "$TMPERR" >&2 || true
-              exit 1
-            fi
-          fi
-          rm -f "$TMPERR"
+          # If the key is in the new OpenSSH private-key format and later SSH fails,
+          # we'll attempt conversion in-place during debugging steps (but avoid ssh-add).
+          ls -l ~/.ssh/deploy_key
 
       - name: Ensure host is known
         env:
@@ -84,10 +70,10 @@ jobs:
             exit 1
           fi
 
-          # Use ssh-keyscan to fetch remote host keys. When using a non-standard port, format entries as [host]:port
           PORT=${SSH_PORT:-22}
           if [ "$PORT" = "" ]; then PORT=22; fi
 
+          # Use ssh-keyscan to fetch remote host keys. When using a non-standard port, format entries as [host]:port
           if [ "$PORT" = "22" ]; then
             ssh-keyscan -t rsa,ecdsa,ed25519 "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
           else
@@ -111,8 +97,8 @@ jobs:
           if [ -n "${SSH_PORT:-}" ]; then
             PORT_OPT="-p ${SSH_PORT}"
           fi
-          # Run a verbose SSH connection once to capture handshake details for troubleshooting
-          ssh -vvv -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK' || true
+          # Use the identity file directly to avoid ssh-agent/ssh-add issues
+          ssh -vvv -i ~/.ssh/deploy_key -oBatchMode=yes -oStrictHostKeyChecking=yes -oConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK' || true
 
       - name: Test SSH connection
         env:
@@ -135,7 +121,8 @@ jobs:
             PORT_OPT="-p ${SSH_PORT}"
           fi
 
-          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK'
+          # Use the identity file directly
+          ssh -i ~/.ssh/deploy_key -oBatchMode=yes -oStrictHostKeyChecking=yes -oConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK'
 
       - name: Run SFTP/SSH commands
         env:
@@ -146,12 +133,13 @@ jobs:
           set -euo pipefail
           PORT_OPT=""
           if [ -n "${SSH_PORT:-}" ]; then
+            # sftp doesn't accept -i on some versions; pass via -oIdentityFile
             PORT_OPT="-oPort=${SSH_PORT}"
           fi
-          sftp -o BatchMode=yes -o StrictHostKeyChecking=yes $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" <<'EOF'
+          sftp -oIdentityFile=~/.ssh/deploy_key -oBatchMode=yes -oStrictHostKeyChecking=yes $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" <<'EOF'
           quit
           EOF
-          
+
       - name: Deploy to SiteGround via SFTP
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
