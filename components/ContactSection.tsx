@@ -1,13 +1,78 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { toast } from 'sonner'
 import { Card } from './ui/card'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
-import { Github, Linkedin, Mail, Twitter, MapPin, Phone } from 'lucide-react'
+import { Github, Linkedin, Mail, Twitter, MapPin, Phone, Loader2 } from 'lucide-react'
+
+const contactFormSchema = z.object({
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  subject: z.string().min(5, 'Subject must be at least 5 characters'),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+})
+
+type ContactFormData = z.infer<typeof contactFormSchema>
 
 export function ContactSection() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+  })
+
+  const onSubmit = async (data: ContactFormData) => {
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY || 'YOUR_WEB3FORMS_ACCESS_KEY',
+          name: `${data.firstName} ${data.lastName}`,
+          email: data.email,
+          subject: data.subject,
+          message: data.message,
+          from_name: 'Crivac.com Contact Form',
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success('Message sent successfully!', {
+          description: "Thank you for reaching out. I'll get back to you soon.",
+        })
+        reset()
+      } else {
+        throw new Error(result.message || 'Failed to send message')
+      }
+    } catch (error) {
+      toast.error('Failed to send message', {
+        description: 'Please try again or contact me directly via email.',
+      })
+      console.error('Form submission error:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const contactInfo = [
     {
       icon: Mail,
@@ -64,52 +129,88 @@ export function ContactSection() {
           >
             <Card className="border-white/10 bg-gray-900/50 p-8">
               <h3 className="mb-6 text-2xl text-white">Send me a message</h3>
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="mb-2 block text-sm text-gray-300">First Name</label>
                     <Input
+                      {...register('firstName')}
                       placeholder="Your first name"
                       className="border-white/20 bg-black/50 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                      disabled={isSubmitting}
                     />
+                    {errors.firstName && (
+                      <p className="mt-1 text-sm text-red-400">{errors.firstName.message}</p>
+                    )}
                   </div>
                   <div>
                     <label className="mb-2 block text-sm text-gray-300">Last Name</label>
                     <Input
+                      {...register('lastName')}
                       placeholder="Your last name"
                       className="border-white/20 bg-black/50 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                      disabled={isSubmitting}
                     />
+                    {errors.lastName && (
+                      <p className="mt-1 text-sm text-red-400">{errors.lastName.message}</p>
+                    )}
                   </div>
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm text-gray-300">Email</label>
                   <Input
+                    {...register('email')}
                     type="email"
                     placeholder="your.email@example.com"
                     className="border-white/20 bg-black/50 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                    disabled={isSubmitting}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm text-gray-300">Subject</label>
                   <Input
+                    {...register('subject')}
                     placeholder="Project discussion"
                     className="border-white/20 bg-black/50 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                    disabled={isSubmitting}
                   />
+                  {errors.subject && (
+                    <p className="mt-1 text-sm text-red-400">{errors.subject.message}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm text-gray-300">Message</label>
                   <Textarea
+                    {...register('message')}
                     placeholder="Tell me about your project..."
                     rows={5}
                     className="resize-none border-white/20 bg-black/50 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                    disabled={isSubmitting}
                   />
+                  {errors.message && (
+                    <p className="mt-1 text-sm text-red-400">{errors.message.message}</p>
+                  )}
                 </div>
 
-                <Button className="w-full bg-emerald-500 py-3 text-white hover:bg-emerald-600">
-                  Send Message
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-emerald-500 py-3 text-white hover:bg-emerald-600 disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Message'
+                  )}
                 </Button>
               </form>
             </Card>
