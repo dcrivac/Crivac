@@ -55,16 +55,15 @@ export function AboutSection() {
               Passionate about creating digital experiences that matter
             </h3>
             <p className="leading-relaxed text-gray-300">
-              With over  10 years of experience in web development, I've had the privilege of working
-              with startups and established companies to bring their digital visions to life. My
-              journey began with a curiosity about how websites work, and it has evolved into a
-              passion for creating seamless, performant applications.
+              I'm David Crivac, a San Diego developer building native apps for macOS and iOS under
+              the name Crivac Creations, along with the web and mobile tools around them. Most of my
+              projects start with a real problem from my own work, like pulling tables out of
+              scanned PDFs or planning a delivery route, and grow into finished products with tests,
+              licensing and deployment.
             </p>
             <p className="leading-relaxed text-gray-300">
-              I specialize in React, Node.js, and modern JavaScript frameworks, but I'm always eager
-              to learn new technologies that can help me build better solutions. When I'm not
-              coding, you'll find me contributing to open-source projects, writing technical
-              articles, or exploring the latest in web technologies.
+              I work mainly in Swift and SwiftUI, and reach for Flutter, PHP, JavaScript and Python
+              when a project needs them.
             </p>
 
             <motion.div
