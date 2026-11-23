@@ -2,30 +2,33 @@
 
 import { motion } from 'framer-motion'
 import { Card } from './ui/card'
-import { Code, Coffee, Lightbulb, Users } from 'lucide-react'
+import { Cpu, Lock, Package, Smartphone } from 'lucide-react'
 
 export function AboutSection() {
   const features = [
     {
-      icon: Code,
-      title: 'Clean Code',
+      icon: Smartphone,
+      title: 'Native Apple apps',
       description:
-        'Writing maintainable, scalable, and efficient code that stands the test of time.',
+        'Swift and SwiftUI apps for macOS and iOS, built to feel at home on the platform.',
     },
     {
-      icon: Lightbulb,
-      title: 'Innovation',
-      description: 'Always exploring new technologies and creative solutions to complex problems.',
+      icon: Cpu,
+      title: 'On-device intelligence',
+      description:
+        'Vision OCR and NaturalLanguage embeddings power features in Clipso and PDFtoExcel Pro.',
     },
     {
-      icon: Users,
-      title: 'Collaboration',
-      description: 'Working effectively with teams to deliver exceptional user experiences.',
+      icon: Package,
+      title: 'Complete products',
+      description:
+        'Accounts, Stripe and Paddle payments, tests and automatic deploys, not just demos.',
     },
     {
-      icon: Coffee,
-      title: 'Dedication',
-      description: 'Committed to continuous learning and staying current with industry trends.',
+      icon: Lock,
+      title: 'Privacy first',
+      description:
+        'Data stays on the device, with AES-256-GCM encryption in Clipso and SwiftData in Metric Pulse.',
     },
   ]
 
@@ -51,9 +54,7 @@ export function AboutSection() {
             viewport={{ once: true }}
             className="space-y-6"
           >
-            <h3 className="mb-4 text-2xl text-white">
-              Passionate about creating digital experiences that matter
-            </h3>
+            <h3 className="mb-4 text-2xl text-white">Independent Apple platform developer</h3>
             <p className="leading-relaxed text-gray-300">
               I'm David Crivac, a San Diego developer building native apps for macOS and iOS under
               the name Crivac Creations, along with the web and mobile tools around them. Most of my
@@ -65,25 +66,6 @@ export function AboutSection() {
               I work mainly in Swift and SwiftUI, and reach for Flutter, PHP, JavaScript and Python
               when a project needs them.
             </p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              viewport={{ once: true }}
-              className="mt-6 flex flex-wrap gap-3"
-            >
-              {['Problem Solver', 'Team Player', 'Quick Learner', 'Detail Oriented'].map(
-                (trait) => (
-                  <span
-                    key={trait}
-                    className="rounded-full border border-emerald-500/30 bg-emerald-500/20 px-4 py-2 text-sm text-emerald-400"
-                  >
-                    {trait}
-                  </span>
-                )
-              )}
-            </motion.div>
           </motion.div>
 
           <motion.div

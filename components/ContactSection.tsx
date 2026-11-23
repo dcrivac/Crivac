@@ -5,7 +5,7 @@ import { Card } from './ui/card'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
-import { Github, Linkedin, Mail, Twitter, MapPin, Phone } from 'lucide-react'
+import { Github, Mail, MapPin, Phone } from 'lucide-react'
 
 export function ContactSection() {
   const contactInfo = [
@@ -30,10 +30,8 @@ export function ContactSection() {
   ]
 
   const socialLinks = [
-    { icon: Github, href: '#', label: 'GitHub' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Mail, href: '#', label: 'Email' },
+    { icon: Github, href: 'https://github.com/dcrivac', label: 'GitHub' },
+    { icon: Mail, href: 'mailto:admin@crivac.com', label: 'Email' },
   ]
 
   return (
@@ -161,6 +159,10 @@ export function ContactSection() {
                   <motion.a
                     key={social.label}
                     href={social.href}
+                    aria-label={social.label}
+                    {...(social.href.startsWith('http')
+                      ? { target: '_blank', rel: 'noopener noreferrer' }
+                      : {})}
                     initial={{ opacity: 0, scale: 0 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ delay: index * 0.1, duration: 0.3 }}
@@ -186,7 +188,8 @@ export function ContactSection() {
           className="mt-16 border-t border-white/10 pt-8 text-center"
         >
           <p className="text-gray-400">
-            © 2025 David Crivac. Designed &amp; Built with ❤️ using React and Tailwind CSS.
+            © {new Date().getFullYear()} David Crivac. Designed and built with React and Tailwind
+            CSS.
           </p>
         </motion.div>
       </div>
