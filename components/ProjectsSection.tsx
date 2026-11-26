@@ -49,7 +49,9 @@ export function ProjectsSection() {
       title: 'Clipso',
       description:
         "A private clipboard manager for Mac that finds what you copied by meaning, not just keywords. Search results blend keyword match, semantic similarity from Apple's on-device NLEmbedding, recency and frequency, and text in copied images is read with Vision OCR. Related clips are grouped into project contexts automatically, everything stays on the Mac with AES-256-GCM encryption, and Premium licensing runs through Paddle and a small Node.js backend.",
-      image: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=600&h=400&fit=crop',
+      image: '/projects/clipso.webp',
+      imageAlt:
+        'Clipso menu bar window with a search field, project tag filters and recent clips of code, a link and a note, each labeled with its source app',
       technologies: [
         'Swift',
         'SwiftUI',
