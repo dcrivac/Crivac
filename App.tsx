@@ -1,3 +1,4 @@
+import { Toaster } from 'sonner'
 import { Navigation } from './components/Navigation'
 import { HeroSection } from './components/HeroSection'
 import { AboutSection } from './components/AboutSection'
@@ -8,6 +9,7 @@ import { ContactSection } from './components/ContactSection'
 export default function App() {
   return (
     <div className="dark min-h-screen bg-black text-white">
+      <Toaster position="top-right" theme="dark" richColors />
       <Navigation />
       <main>
         <HeroSection />
