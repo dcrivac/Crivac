@@ -1,13 +1,18 @@
-name: Deploy to SiteGround
+name: Deploy to Cloudflare
 
 on:
   push:
     branches:
       - main
+  pull_request:
   workflow_dispatch: {}
 
 permissions:
   contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
@@ -15,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -29,124 +34,11 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Prepare SSH key (write identity file, normalize)
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          set -euo pipefail
-          mkdir -p ~/.ssh
-          if [ -z "${SSH_PRIVATE_KEY:-}" ]; then
-            echo "No SSH_PRIVATE_KEY secret found" >&2
-            exit 1
-          fi
-
-          # Write key to file preserving newlines and strict permissions
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
-          chmod 600 ~/.ssh/id_deploy
-
-          # Normalize CRLF -> LF if present (install dos2unix only if needed)
-          if grep -q $'\r' ~/.ssh/id_deploy 2>/dev/null || file ~/.ssh/id_deploy | grep -q CRLF; then
-            echo "Converting CRLF -> LF in id_deploy"
-            if ! command -v dos2unix >/dev/null 2>&1; then
-              sudo apt-get update -y
-              sudo apt-get install -y dos2unix openssh-client || true
-            fi
-            dos2unix ~/.ssh/id_deploy || true
-          fi
-
-          # If the key is in the new OpenSSH private-key format and later SSH fails,
-          # we'll attempt conversion in-place during debugging steps (but avoid ssh-add).
-          ls -l ~/.ssh/id_deploy
-
-      - name: Ensure host is known
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-        run: |
-          set -euo pipefail
-          mkdir -p ~/.ssh
-          if [ -z "${SSH_HOST:-}" ]; then
-            echo "Error: SSH_HOST secret is not set" >&2
-            exit 1
-          fi
-
-          PORT=${SSH_PORT:-22}
-          if [ "$PORT" = "" ]; then PORT=22; fi
-
-          # Use ssh-keyscan to fetch remote host keys. When using a non-standard port, format entries as [host]:port
-          if [ "$PORT" = "22" ]; then
-            ssh-keyscan -t rsa,ecdsa,ed25519 "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
-          else
-            ssh-keyscan -p "$PORT" -t rsa,ecdsa,ed25519 "$SSH_HOST" 2>/dev/null | sed "s/^${SSH_HOST}/[${SSH_HOST}]:${PORT}/" >> ~/.ssh/known_hosts || true
-          fi
-          chmod 644 ~/.ssh/known_hosts || true
-
-      - name: Debug SSH (manual runs only)
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-        run: |
-          set -euo pipefail
-          echo "--- known_hosts ---"
-          ls -l ~/.ssh || true
-          sed -n '1,200p' ~/.ssh/known_hosts || true
-          echo "--- ssh verbose connect ---"
-          PORT_OPT=""
-          if [ -n "${SSH_PORT:-}" ]; then
-            PORT_OPT="-p ${SSH_PORT}"
-          fi
-          # Use the identity file directly to avoid ssh-agent/ssh-add issues
-          ssh -vvv -i ~/.ssh/id_deploy -oBatchMode=yes -oStrictHostKeyChecking=yes -oConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK' || true
-
-      - name: Test SSH connection
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-        run: |
-          set -euo pipefail
-          if [ -z "${SSH_HOST:-}" ]; then
-            echo "Error: SSH_HOST secret is not set" >&2
-            exit 1
-          fi
-          if [ -z "${SSH_USERNAME:-}" ]; then
-            echo "Error: SSH_USERNAME secret is not set" >&2
-            exit 1
-          fi
-
-          PORT_OPT=""
-          if [ -n "${SSH_PORT:-}" ]; then
-            PORT_OPT="-p ${SSH_PORT}"
-          fi
-
-          # Use the identity file directly
-          ssh -i ~/.ssh/id_deploy -oBatchMode=yes -oStrictHostKeyChecking=yes -oConnectTimeout=10 $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" 'echo SSH_CONNECTION_OK'
-
-      - name: Run SFTP/SSH commands
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-        run: |
-          set -euo pipefail
-          PORT_OPT=""
-          if [ -n "${SSH_PORT:-}" ]; then
-            # sftp doesn't accept -i on some versions; pass via -oIdentityFile
-            PORT_OPT="-oPort=${SSH_PORT}"
-          fi
-          sftp -oIdentityFile=~/.ssh/id_deploy -oBatchMode=yes -oStrictHostKeyChecking=yes $PORT_OPT "${SSH_USERNAME}@${SSH_HOST}" <<'EOF'
-          quit
-          EOF
-
-      - name: Deploy to SiteGround via rsync
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-          rsync -avz --delete \
-            -e "ssh -p ${{ secrets.SSH_PORT }} -i ~/.ssh/deploy_key" \
-            dist/ \
-            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_PATH }}/
+      # Pull requests only build. Pushes to main deploy to the crivac-site Worker.
+      - name: Deploy to Cloudflare Workers
+        if: github.event_name != 'pull_request'
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: "4.166.0"
+          command: deploy

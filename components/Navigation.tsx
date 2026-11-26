@@ -37,7 +37,7 @@ export function Navigation() {
             transition={{ delay: 0.2 }}
             className="text-xl font-medium text-white"
           >
-            &lt;DevPortfolio /&gt;
+            Crivac Creations
           </motion.div>
 
           <div className="hidden items-center space-x-8 md:flex">

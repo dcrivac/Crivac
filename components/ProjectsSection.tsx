@@ -6,14 +6,59 @@ import { Button } from './ui/button'
 import { ExternalLink, Github } from 'lucide-react'
 import { ImageWithFallback } from './figma/ImagineWithFallback'
 
+function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    Shipped: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300',
+    'In development': 'border-blue-400/40 bg-blue-400/15 text-blue-300',
+    'Personal tool': 'border-gray-400/40 bg-gray-400/15 text-gray-300',
+  }
+  return (
+    <span
+      className={`rounded-full border px-2.5 py-0.5 text-xs ${styles[status] ?? styles['Personal tool']}`}
+    >
+      {status}
+    </span>
+  )
+}
+
 export function ProjectsSection() {
-  const projects = [
+  type Project = {
+    title: string
+    description: string
+    image: string
+    technologies: string[]
+    status?: 'Shipped' | 'In development' | 'Personal tool'
+    github?: string
+    live?: string
+    featured: boolean
+  }
+
+  const projects: Project[] = [
     {
-      title: 'Clipso.app',
+      title: 'PDFtoExcel Pro',
       description:
-        'An intelligent clipboard manager for macOS with AI-powered semantic search. Find clipboard items by meaning, not just keywords, using 100% local, on-device machine learning with zero cloud dependency. Features AES-256-GCM encryption and a privacy-first architecture.',
+        "Turns tables in PDFs, including scanned pages, into clean Excel and CSV files. Every page is rendered and read with Apple's Vision OCR, text is grouped into rows and column positions are clustered so empty cells stay in place, and tilted scans are detected and straightened before a second read. It writes real XLSX workbooks with typed number formats and frozen header rows, and the detection logic is tested against synthetic page fixtures where the correct layout is known.",
+      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop',
+      technologies: ['Swift', 'SwiftUI', 'Vision', 'PDFKit', 'macOS', 'Swift Package Manager'],
+      status: 'In development',
+      github: 'https://github.com/dcrivac/PDFtoExcel-SPM',
+      featured: true,
+    },
+    {
+      title: 'Clipso',
+      description:
+        "A private clipboard manager for Mac that finds what you copied by meaning, not just keywords. Search results blend keyword match, semantic similarity from Apple's on-device NLEmbedding, recency and frequency, and text in copied images is read with Vision OCR. Related clips are grouped into project contexts automatically, everything stays on the Mac with AES-256-GCM encryption, and Premium licensing runs through Paddle and a small Node.js backend.",
       image: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=600&h=400&fit=crop',
-      technologies: ['Swift', 'SwiftUI', 'CoreML', 'Core Data', 'NLEmbedding', 'AES-256-GCM'],
+      technologies: [
+        'Swift',
+        'SwiftUI',
+        'Core Data',
+        'NaturalLanguage',
+        'Vision',
+        'Paddle',
+        'Node.js',
+      ],
+      status: 'Shipped',
       github: 'https://github.com/dcrivac/Clipso',
       live: 'https://clipso.app/',
       featured: true,
@@ -21,31 +66,30 @@ export function ProjectsSection() {
     {
       title: 'Yard Picker Pro',
       description:
-        'AI-powered junkyard profitability analyzer for Pick-Your-Part salvage yards. Paste a yard inventory URL, select cars, and get a ranked pull list — 5 most profitable parts per vehicle with full eBay cost breakdowns and net profit math. No car knowledge needed.',
+        "Tells junkyard pickers which cars and parts are worth pulling, with the profit math shown. Claude picks the most profitable parts for each vehicle, and each one is priced against live eBay data and the yard's own part prices, net of labor, fees and shipping. It's a full product with user accounts, a metered credit system with Stripe Checkout, a rate-limited server-side AI proxy, error monitoring and automatic deploys from GitHub.",
       image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
-      technologies: ['PHP', 'JavaScript', 'HTML/CSS', 'eBay API', 'Web Scraping'],
+      technologies: ['PHP', 'MySQL', 'JavaScript', 'Claude API', 'eBay API', 'Stripe', 'Sentry'],
+      status: 'In development',
       github: 'https://github.com/dcrivac/yard-picker-pro',
-      live: 'https://crivac.com/yp2.html',
       featured: true,
     },
     {
-      title: 'MetricPulse',
+      title: 'QuickRoute',
       description:
-        'Native iOS app for GrubHub delivery drivers to track Premier tier metrics — On-Time Meals, Same-day Cancellation Rate, and Order Completion Rate — over a rolling 14-day window. Built entirely with first-party Apple frameworks, zero third-party dependencies.',
-      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&h=400&fit=crop',
-      technologies: ['Swift', 'SwiftUI', 'SwiftData', 'iOS'],
-      github: 'https://github.com/dcrivac/MetricPulse',
-      live: 'https://github.com/dcrivac/MetricPulse',
-      featured: false,
+        "Puts a driver's delivery stops in the fastest order and hands off to Google Maps. Addresses come in through Google Places autocomplete, routes of up to 10 stops get the exact best order, and longer ones use a nearest neighbor plus 3-opt heuristic. It flags missed delivery time windows and shows the route on a map before one-tap navigation.",
+      image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=400&fit=crop',
+      technologies: ['Flutter', 'Dart', 'Google Maps Platform', 'Provider', 'Hive', 'Firebase'],
+      status: 'In development',
+      featured: true,
     },
     {
-      title: 'Route Optimizer',
+      title: 'Metric Pulse',
       description:
-        'Flutter app that optimizes delivery routes for gig workers on Shipt, DoorDash, and Instacart. Uses Nearest Neighbor + 2-opt algorithms, Google Places autocomplete, and one-tap Google Maps handoff. Supports unlimited stops with time and distance estimates.',
-      image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=400&fit=crop',
-      technologies: ['Flutter', 'Dart', 'Google Maps', 'Google Places', 'Hive', 'Provider'],
-      github: 'https://github.com/dcrivac/Route',
-      live: 'https://github.com/dcrivac/Route',
+        'Shows delivery drivers where they stand on their platform tier and what it takes to keep it. It logs daily metrics, computes the rolling 14-day window, warns when a strong day is about to age out, and includes a calculator for what the coming days need to look like to reach or hold a tier. Data stays on the device with SwiftData, with local notifications and CSV export.',
+      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&h=400&fit=crop',
+      technologies: ['Swift', 'SwiftUI', 'SwiftData', 'iOS'],
+      status: 'In development',
+      github: 'https://github.com/dcrivac/MetricPulse',
       featured: false,
     },
     {
@@ -96,8 +140,8 @@ export function ProjectsSection() {
           <h2 className="mb-6 text-4xl text-white md:text-5xl">Featured Projects</h2>
           <div className="mx-auto h-1 w-24 bg-gradient-to-r from-emerald-400 to-blue-400"></div>
           <p className="mx-auto mt-6 max-w-2xl text-gray-400">
-            Here are some of my recent projects that showcase my skills and passion for web
-            development
+            Native apps and web products I've designed and built, from Mac utilities to full-stack
+            tools
           </p>
         </motion.div>
 
@@ -121,29 +165,38 @@ export function ProjectsSection() {
                   />
                   <div className="absolute inset-0 bg-black/40 transition-all duration-300 group-hover:bg-black/20"></div>
                   <div className="absolute top-4 right-4 flex space-x-2">
-                    <motion.a
-                      href={project.github}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white transition-all duration-300 hover:bg-emerald-500"
-                    >
-                      <Github className="h-5 w-5" />
-                    </motion.a>
-                    <motion.a
-                      href={project.live}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white transition-all duration-300 hover:bg-emerald-500"
-                    >
-                      <ExternalLink className="h-5 w-5" />
-                    </motion.a>
+                    {project.github && (
+                      <motion.a
+                        href={project.github}
+                        aria-label={`${project.title} source on GitHub`}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white transition-all duration-300 hover:bg-emerald-500"
+                      >
+                        <Github className="h-5 w-5" />
+                      </motion.a>
+                    )}
+                    {project.live && (
+                      <motion.a
+                        href={project.live}
+                        aria-label={`Open ${project.title}`}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white transition-all duration-300 hover:bg-emerald-500"
+                      >
+                        <ExternalLink className="h-5 w-5" />
+                      </motion.a>
+                    )}
                   </div>
                 </div>
 
                 <div className="p-6">
-                  <h3 className="mb-3 text-xl text-white transition-colors duration-300 group-hover:text-emerald-400">
-                    {project.title}
-                  </h3>
+                  <div className="mb-3 flex flex-wrap items-center gap-3">
+                    <h3 className="text-xl text-white transition-colors duration-300 group-hover:text-emerald-400">
+                      {project.title}
+                    </h3>
+                    {project.status && <StatusBadge status={project.status} />}
+                  </div>
                   <p className="mb-4 leading-relaxed text-gray-400">{project.description}</p>
                   <div className="flex flex-wrap gap-2">
                     {project.technologies.map((tech) => (
@@ -191,25 +244,34 @@ export function ProjectsSection() {
                   />
                   <div className="absolute inset-0 bg-black/40"></div>
                   <div className="absolute top-3 right-3 flex space-x-2">
-                    <a
-                      href={project.github}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white transition-all duration-300 hover:bg-emerald-500"
-                    >
-                      <Github className="h-4 w-4" />
-                    </a>
-                    <a
-                      href={project.live}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white transition-all duration-300 hover:bg-emerald-500"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
+                    {project.github && (
+                      <a
+                        href={project.github}
+                        aria-label={`${project.title} source on GitHub`}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white transition-all duration-300 hover:bg-emerald-500"
+                      >
+                        <Github className="h-4 w-4" />
+                      </a>
+                    )}
+                    {project.live && (
+                      <a
+                        href={project.live}
+                        aria-label={`Open ${project.title}`}
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-black/70 text-white transition-all duration-300 hover:bg-emerald-500"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    )}
                   </div>
                 </div>
 
                 <div className="p-4">
-                  <h4 className="mb-2 text-lg text-white transition-colors duration-300 group-hover:text-emerald-400">
-                    {project.title}
-                  </h4>
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <h4 className="text-lg text-white transition-colors duration-300 group-hover:text-emerald-400">
+                      {project.title}
+                    </h4>
+                    {project.status && <StatusBadge status={project.status} />}
+                  </div>
                   <p className="mb-3 line-clamp-3 text-sm text-gray-400">{project.description}</p>
                   <div className="flex flex-wrap gap-1">
                     {project.technologies.slice(0, 3).map((tech) => (

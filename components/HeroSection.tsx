@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion'
 import { Button } from './ui/button'
-import { ArrowDown, Github, Linkedin, Mail } from 'lucide-react'
+import { ArrowDown, Github, Mail } from 'lucide-react'
 
 export function HeroSection() {
   const titles = [
-    'Modern Web Developer',
-    'Software Engineer',
-    'iOS Developer',
-    'Full-Stack Engineer',
+    'macOS & iOS Developer',
+    'Swift & SwiftUI Engineer',
+    'Indie App Developer',
+    'Full-Stack Builder',
   ]
   const [currentTitleIndex, setCurrentTitleIndex] = useState(0)
   const mouseX = useMotionValue(0)
@@ -156,9 +156,9 @@ export function HeroSection() {
             transition={{ delay: 0.8 }}
             className="mx-auto max-w-2xl pt-2 pb-8 text-lg text-gray-400"
           >
-            I craft exceptional digital experiences using cutting-edge technologies like React,
-            Node.js, and TypeScript. Passionate about clean code, user experience, and bringing
-            ideas to life.
+            I build native apps for Mac and iPhone in Swift and SwiftUI, along with the web tools
+            and backends behind them. Each one starts with a real problem and ships with tests,
+            licensing and deployment.
           </motion.p>
 
           <motion.div
@@ -182,13 +182,13 @@ export function HeroSection() {
 
             <div className="flex items-center space-x-4">
               {[
-                { icon: Github, href: 'https://github.com/dcrivac' },
-                { icon: Linkedin, href: '#' },
-                { icon: Mail, href: 'mailto:davidkenji@gmail.com' },
-              ].map(({ icon: Icon, href }, index) => (
+                { icon: Github, href: 'https://github.com/dcrivac', label: 'GitHub' },
+                { icon: Mail, href: 'mailto:admin@crivac.com', label: 'Email' },
+              ].map(({ icon: Icon, href, label }, index) => (
                 <motion.a
                   key={index}
                   href={href}
+                  aria-label={label}
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
                   whileHover={{

@@ -37,15 +37,26 @@ npm run format     # prettier
 
 **Push to `main` → it goes live automatically.** No manual steps.
 
-`.github/workflows/deploy.yml` runs on every push to `main`: it builds the site and uploads
-`dist/` to SiteGround over SFTP. Goes live at https://www.crivac.com within ~1 minute.
+crivac.com is served by the Cloudflare Worker `crivac-site` (custom domain `crivac.com`).
+`.github/workflows/deploy.yml` runs on every push to `main`: it builds the site and runs
+`wrangler deploy`, which uploads `dist/` as the Worker's static assets plus `workers/site.js`.
+Pull requests only build, so a broken build shows up before merge.
 
-- The SiteGround web root is **shared** — it also holds backend files (`api.php`, `scrape.php`,
-  etc.) for other projects. The deploy uses `delete_remote_files: false` and only uploads the
-  built portfolio, so **never enable delete-remote** or those files will be wiped.
-- Deploy target + SSH live in the repo's GitHub **Actions secrets** (`SSH_HOST`, `SSH_USERNAME`,
-  `SSH_PORT`, `SSH_PRIVATE_KEY`, `REMOTE_PATH`). The web root is
-  `/home/u2074-ems391e7qg8i/www/crivac.com/public_html/`.
+- `wrangler.jsonc` holds the Worker config (name, account, assets dir, custom domain).
+- **A deploy replaces every static file on the Worker.** Anything served from crivac.com must
+  live in this repo (`public/` is copied into `dist/` as is, e.g. `public/firetv/`).
+- `workers/site.js` serves the assets plus one route, `/ebay-deletion.php`: Yard Picker Pro's
+  eBay Marketplace Account Deletion endpoint, still registered at this crivac.com URL in the
+  eBay developer portal. POST notices get a 204 (the app stores no eBay user data). The GET
+  challenge needs the Worker secret `EBAY_VERIFICATION_TOKEN` (the token in eBay's portal),
+  and only runs when the endpoint is saved again there. Keep this route until the portal points
+  at Yard Picker Pro's own domain, or eBay can disable the app's keys.
+- The old `POST /api/generate` proxy to Anthropic was removed because it was open to anyone.
+  Don't add a route that spends an API key without auth and a rate limit.
+- `public/_redirects` sends the old `/yp2.html` to Yard Picker Pro's own domain.
+- The workflow needs one GitHub Actions secret: `CLOUDFLARE_API_TOKEN` (Edit Cloudflare
+  Workers template, scoped to this account and the crivac.com zone).
+- The site moved off SiteGround in Nov 2026. The old `SSH_*` / `REMOTE_PATH` secrets are unused.
 
 ## Editing on the go
 This repo is connected to Claude Code on the web (claude.ai/code). From a phone or browser:
