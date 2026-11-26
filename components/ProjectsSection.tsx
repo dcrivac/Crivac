@@ -39,7 +39,9 @@ export function ProjectsSection() {
       title: 'PDFtoExcel Pro',
       description:
         "Turns tables in PDFs, including scanned pages, into clean Excel and CSV files. Every page is rendered and read with Apple's Vision OCR, text is grouped into rows and column positions are clustered so empty cells stay in place, and tilted scans are detected and straightened before a second read. It writes real XLSX workbooks with typed number formats and frozen header rows, and the detection logic is tested against synthetic page fixtures where the correct layout is known.",
-      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop',
+      image: '/projects/pdftoexcel-pro.webp',
+      imageAlt:
+        'PDFtoExcel Pro Mac window showing one converted sample PDF with its page and table counts',
       technologies: ['Swift', 'SwiftUI', 'Vision', 'PDFKit', 'macOS', 'Swift Package Manager'],
       status: 'In development',
       github: 'https://github.com/dcrivac/PDFtoExcel-SPM',
@@ -91,7 +93,9 @@ export function ProjectsSection() {
       title: 'Metric Pulse',
       description:
         'Shows delivery drivers where they stand on their platform tier and what it takes to keep it. It logs daily metrics, computes the rolling 14-day window, warns when a strong day is about to age out, and includes a calculator for what the coming days need to look like to reach or hold a tier. Data stays on the device with SwiftData, with local notifications and CSV export.',
-      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&h=400&fit=crop',
+      image: '/projects/metric-pulse.webp',
+      imageAlt:
+        'Metric Pulse iPhone dashboard showing a Premier tier, a 14-day shift window and OCR, SCR and OTM scores',
       technologies: ['Swift', 'SwiftUI', 'SwiftData', 'iOS'],
       status: 'In development',
       github: 'https://github.com/dcrivac/MetricPulse',
