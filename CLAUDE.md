@@ -48,6 +48,15 @@ Pull requests only build, so a broken build shows up before merge.
 - `workers/site.js` serves the assets and handles `POST /api/generate`, which forwards to the
   Anthropic API using the Worker secret `ANTHROPIC_API_KEY` (set in Cloudflare, not in git;
   secrets survive deploys).
+  live in this repo (`public/` is copied into `dist/` as is, e.g. `public/firetv/`).
+- `workers/site.js` serves the assets plus one route, `/ebay-deletion.php`: Yard Picker Pro's
+  eBay Marketplace Account Deletion endpoint, still registered at this crivac.com URL in the
+  eBay developer portal. POST notices get a 204 (the app stores no eBay user data). The GET
+  challenge needs the Worker secret `EBAY_VERIFICATION_TOKEN` (the token in eBay's portal),
+  and only runs when the endpoint is saved again there. Keep this route until the portal points
+  at Yard Picker Pro's own domain, or eBay can disable the app's keys.
+- The old `POST /api/generate` proxy to Anthropic was removed because it was open to anyone.
+  Don't add a route that spends an API key without auth and a rate limit.
 - `public/_redirects` sends the old `/yp2.html` to Yard Picker Pro's own domain.
 - The workflow needs one GitHub Actions secret: `CLOUDFLARE_API_TOKEN` (Edit Cloudflare
   Workers template, scoped to this account and the crivac.com zone).
