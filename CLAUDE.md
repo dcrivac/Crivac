@@ -44,7 +44,7 @@ Pull requests only build, so a broken build shows up before merge.
 
 - `wrangler.jsonc` holds the Worker config (name, account, assets dir, custom domain).
 - **A deploy replaces every static file on the Worker.** Anything served from crivac.com must
-  live in this repo (`public/` is copied into `dist/` as is, e.g. `public/firetv/`).
+  live in this repo (`public/` is copied into `dist/` as is, e.g. `public/projects/`).
 - `workers/site.js` serves the assets and handles `POST /api/generate`, which forwards to the
   Anthropic API using the Worker secret `ANTHROPIC_API_KEY` (set in Cloudflare, not in git;
   secrets survive deploys).
