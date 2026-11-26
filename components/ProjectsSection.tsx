@@ -26,6 +26,7 @@ export function ProjectsSection() {
     title: string
     description: string
     image: string
+    imageAlt?: string
     technologies: string[]
     status?: 'Shipped' | 'In development' | 'Personal tool'
     github?: string
@@ -67,7 +68,9 @@ export function ProjectsSection() {
       title: 'Yard Picker Pro',
       description:
         "Tells junkyard pickers which cars and parts are worth pulling, with the profit math shown. Claude picks the most profitable parts for each vehicle, and each one is priced against live eBay data and the yard's own part prices, net of labor, fees and shipping. It's a full product with user accounts, a metered credit system with Stripe Checkout, a rate-limited server-side AI proxy, error monitoring and automatic deploys from GitHub.",
-      image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop',
+      image: '/projects/yard-picker-pro.webp',
+      imageAlt:
+        'Yard Picker Pro add-a-car screen with a Scan VIN button and VIN, year, make and model fields',
       technologies: ['PHP', 'MySQL', 'JavaScript', 'Claude API', 'eBay API', 'Stripe', 'Sentry'],
       status: 'In development',
       github: 'https://github.com/dcrivac/yard-picker-pro',
@@ -116,7 +119,8 @@ export function ProjectsSection() {
       title: 'Portfolio Website',
       description:
         'This very site — a responsive developer portfolio with smooth animations, a dark theme, and optimized performance. Built as a single-page React app and continuously deployed to production on every push.',
-      image: 'https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=600&h=400&fit=crop',
+      image: '/projects/portfolio-website.webp',
+      imageAlt: 'The crivac.com home page with the name David Kenji Crivac and a short intro',
       technologies: ['Vite', 'React', 'TypeScript', 'Tailwind', 'Framer Motion'],
       github: 'https://github.com/dcrivac/Crivac',
       live: 'https://www.crivac.com',
@@ -160,7 +164,7 @@ export function ProjectsSection() {
                 <div className="relative overflow-hidden">
                   <ImageWithFallback
                     src={project.image}
-                    alt={project.title}
+                    alt={project.imageAlt ?? project.title}
                     className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-black/40 transition-all duration-300 group-hover:bg-black/20"></div>
@@ -239,7 +243,7 @@ export function ProjectsSection() {
                 <div className="relative overflow-hidden">
                   <ImageWithFallback
                     src={project.image}
-                    alt={project.title}
+                    alt={project.imageAlt ?? project.title}
                     className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/40"></div>
