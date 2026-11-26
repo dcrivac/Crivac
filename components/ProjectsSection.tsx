@@ -84,7 +84,9 @@ export function ProjectsSection() {
       title: 'QuickRoute',
       description:
         "Puts a driver's delivery stops in the fastest order and hands off to Google Maps. Addresses come in through Google Places autocomplete, routes of up to 10 stops get the exact best order, and longer ones use a nearest neighbor plus 3-opt heuristic. It flags missed delivery time windows and shows the route on a map before one-tap navigation.",
-      image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=400&fit=crop',
+      image: '/projects/quickroute.webp',
+      imageAlt:
+        'QuickRoute iPhone screen listing five sample San Diego stops with an Optimize Route button',
       technologies: ['Flutter', 'Dart', 'Google Maps Platform', 'Provider', 'Hive', 'Firebase'],
       status: 'In development',
       featured: true,
@@ -105,7 +107,9 @@ export function ProjectsSection() {
       title: 'AI SEO Writer',
       description:
         'Full-suite WordPress content platform for generating, refining, and repurposing SEO articles. Supports OpenAI GPT and Google Gemini, with bulk generation, internal linking via SmartLink, tone controls, and a dark-mode interface built for content teams.',
-      image: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&h=400&fit=crop',
+      image: '/projects/ai-seo-writer.webp',
+      imageAlt:
+        'AI SEO Writer plugin screen in a sample WordPress admin, showing the Single Post generator',
       technologies: ['PHP', 'WordPress', 'OpenAI API', 'Gemini API', 'JavaScript'],
       github: 'https://github.com/dcrivac/ai-seo-writer',
       live: 'https://github.com/dcrivac/ai-seo-writer',
