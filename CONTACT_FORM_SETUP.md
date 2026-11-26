@@ -16,7 +16,7 @@ The contact form is now configured to use Web3Forms for handling submissions.
 Create a `.env` file in the root directory:
 
 ```bash
-NEXT_PUBLIC_WEB3FORMS_KEY=your_actual_access_key_here
+VITE_WEB3FORMS_KEY=your_actual_access_key_here
 ```
 
 **Important:** Replace `your_actual_access_key_here` with the access key you received from Web3Forms.
@@ -32,10 +32,10 @@ Make sure `.env` is in your `.gitignore` file to keep your access key secure:
 
 ### 4. Deploy Configuration
 
-When deploying to Vercel, Netlify, or other platforms:
+When deploying to Vercel, Netlify, Cloudflare, or other platforms:
 
 1. Go to your project's environment variables settings
-2. Add: `NEXT_PUBLIC_WEB3FORMS_KEY` with your access key as the value
+2. Add: `VITE_WEB3FORMS_KEY` with your access key as the value
 3. Redeploy your site
 
 ## Features Implemented

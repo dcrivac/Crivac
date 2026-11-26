@@ -44,7 +44,7 @@ export function ContactSection() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY || 'YOUR_WEB3FORMS_ACCESS_KEY',
+          access_key: import.meta.env.VITE_WEB3FORMS_KEY || 'YOUR_WEB3FORMS_ACCESS_KEY',
           name: `${data.firstName} ${data.lastName}`,
           email: data.email,
           subject: data.subject,
