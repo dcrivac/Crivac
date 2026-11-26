@@ -16,6 +16,4 @@
     "enabled": true,
     "logs": { "enabled": true, "invocation_logs": true }
   }
-  // ANTHROPIC_API_KEY is a Worker secret set in Cloudflare. It is not in this
-  // file and survives deploys.
 }

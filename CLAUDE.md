@@ -45,9 +45,9 @@ Pull requests only build, so a broken build shows up before merge.
 - `wrangler.jsonc` holds the Worker config (name, account, assets dir, custom domain).
 - **A deploy replaces every static file on the Worker.** Anything served from crivac.com must
   live in this repo (`public/` is copied into `dist/` as is, e.g. `public/firetv/`).
-- `workers/site.js` serves the assets and handles `POST /api/generate`, which forwards to the
-  Anthropic API using the Worker secret `ANTHROPIC_API_KEY` (set in Cloudflare, not in git;
-  secrets survive deploys).
+- `workers/site.js` only serves the assets. It has no API routes: the old `POST /api/generate`
+  proxy to Anthropic was removed because it was open to anyone. Don't add a route that spends
+  an API key without auth and a rate limit.
 - `public/_redirects` sends the old `/yp2.html` to Yard Picker Pro's own domain.
 - The workflow needs one GitHub Actions secret: `CLOUDFLARE_API_TOKEN` (Edit Cloudflare
   Workers template, scoped to this account and the crivac.com zone).
