@@ -1,5 +1,7 @@
 // crivac.com Worker: serves the built portfolio from dist/ (ASSETS binding),
 // plus one small API route: eBay's account-deletion endpoint for Yard Picker Pro.
+// www.crivac.com is a second custom domain on this Worker; every request to it
+// gets a 301 to the same path on crivac.com, so Google sees one canonical host.
 //
 // It used to forward POST /api/generate to the Anthropic API with the
 // ANTHROPIC_API_KEY secret and no sign-in, so anyone could spend that key.
@@ -14,9 +16,17 @@
 const EBAY_DELETION_PATH = "/ebay-deletion.php";
 const EBAY_DELETION_ENDPOINT = "https://crivac.com/ebay-deletion.php";
 
+const CANONICAL_HOST = "crivac.com";
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.hostname === "www." + CANONICAL_HOST) {
+      url.hostname = CANONICAL_HOST;
+      url.protocol = "https:";
+      url.port = "";
+      return Response.redirect(url.toString(), 301);
+    }
     if (url.pathname === EBAY_DELETION_PATH) {
       return handleEbayDeletion(request, env, url);
     }
