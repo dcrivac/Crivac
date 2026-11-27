@@ -21,3 +21,8 @@ php_errorlog
 .DS_Store
 .vscode/
 .idea/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example

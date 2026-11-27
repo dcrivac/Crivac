@@ -27,6 +27,8 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["vite.config.ts"],
+  // kv-tutorial/ is a standalone Workers scratch project with its own
+  // tsconfig and deps; it must not be typechecked as part of the site build.
+  "exclude": ["vite.config.ts", "kv-tutorial", "dist"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

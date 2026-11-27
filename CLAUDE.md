@@ -1,6 +1,6 @@
 # crivac.com — Portfolio
 
-Personal portfolio for David Crivac, live at **https://www.crivac.com**.
+Personal portfolio for David Crivac, live at **https://crivac.com**.
 
 ## Stack
 - **Vite 6 + React 18 + TypeScript**, Tailwind CSS v4, shadcn/ui, framer-motion.
@@ -37,15 +37,15 @@ npm run format     # prettier
 
 **Push to `main` → it goes live automatically.** No manual steps.
 
-`.github/workflows/deploy.yml` runs on every push to `main`: it builds the site and uploads
-`dist/` to SiteGround over SFTP. Goes live at https://www.crivac.com within ~1 minute.
+`.github/workflows/deploy.yml` runs on every push to `main`: it builds the site and deploys
+`dist/` as static assets on the Cloudflare Worker `crivac-portfolio` (config in `wrangler.jsonc`,
+custom domain `crivac.com`). Manual deploy: `npm run deploy`.
 
-- The SiteGround web root is **shared** — it also holds backend files (`api.php`, `scrape.php`,
-  etc.) for other projects. The deploy uses `delete_remote_files: false` and only uploads the
-  built portfolio, so **never enable delete-remote** or those files will be wiped.
-- Deploy target + SSH live in the repo's GitHub **Actions secrets** (`SSH_HOST`, `SSH_USERNAME`,
-  `SSH_PORT`, `SSH_PRIVATE_KEY`, `REMOTE_PATH`). The web root is
-  `/home/u2074-ems391e7qg8i/www/crivac.com/public_html/`.
+- Needs GitHub **Actions secrets** `CLOUDFLARE_API_TOKEN` (Workers edit permissions) and
+  `CLOUDFLARE_ACCOUNT_ID`.
+- `www.crivac.com` still points at the old SiteGround host, whose web root is shared with
+  backend files (`api.php`, `scrape.php`, etc.) for other projects. Never sync to it with
+  delete enabled.
 
 ## Editing on the go
 This repo is connected to Claude Code on the web (claude.ai/code). From a phone or browser:
