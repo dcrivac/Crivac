@@ -1,6 +1,6 @@
 # crivac.com — Portfolio
 
-Personal portfolio for David Crivac, live at **https://www.crivac.com**.
+Personal portfolio for David Crivac, live at **https://crivac.com** (www.crivac.com redirects there).
 
 ## Stack
 - **Vite 6 + React 18 + TypeScript**, Tailwind CSS v4, shadcn/ui, framer-motion.
@@ -37,7 +37,8 @@ npm run format     # prettier
 
 **Push to `main` → it goes live automatically.** No manual steps.
 
-crivac.com is served by the Cloudflare Worker `crivac-site` (custom domain `crivac.com`).
+crivac.com is served by the Cloudflare Worker `crivac-site` (custom domains `crivac.com` and
+`www.crivac.com`; the Worker 301s www to crivac.com).
 `.github/workflows/deploy.yml` runs on every push to `main`: it builds the site and runs
 `wrangler deploy`, which uploads `dist/` as the Worker's static assets plus `workers/site.js`.
 Pull requests only build, so a broken build shows up before merge.
@@ -54,6 +55,8 @@ Pull requests only build, so a broken build shows up before merge.
 - The old `POST /api/generate` proxy to Anthropic was removed because it was open to anyone.
   Don't add a route that spends an API key without auth and a rate limit.
 - `public/_redirects` sends the old `/yp2.html` to Yard Picker Pro's own domain.
+- `public/robots.txt` and `public/sitemap.xml` are for Google. The site is one page, so the
+  sitemap lists only `https://crivac.com/`. Add a URL there only for a real page that returns 200.
 - The workflow needs one GitHub Actions secret: `CLOUDFLARE_API_TOKEN` (Edit Cloudflare
   Workers template, scoped to this account and the crivac.com zone).
 - The site moved off SiteGround in Nov 2026. The old `SSH_*` / `REMOTE_PATH` secrets are unused.

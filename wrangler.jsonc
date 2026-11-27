@@ -7,9 +7,16 @@
   "compatibility_date": "2026-08-19",
   "assets": {
     "directory": "./dist",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // Run the Worker before matching assets, so www.crivac.com/ and its files
+    // get the redirect too (by default an asset match skips the Worker).
+    "run_worker_first": true
   },
-  "routes": [{ "pattern": "crivac.com", "custom_domain": true }],
+  // www.crivac.com only redirects to crivac.com (see workers/site.js).
+  "routes": [
+    { "pattern": "crivac.com", "custom_domain": true },
+    { "pattern": "www.crivac.com", "custom_domain": true }
+  ],
   "workers_dev": false,
   "preview_urls": false,
   "observability": {
