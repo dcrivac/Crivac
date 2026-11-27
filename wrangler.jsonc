@@ -2,7 +2,7 @@
   // crivac.com: the portfolio build (dist/) plus a small Worker script.
   // Deployed by .github/workflows/deploy.yml on every push to main.
   "name": "crivac-site",
-  "account_id": "0304b7edfd48aa3b53125093672667af",
+  "account_id": "28515e02ec873cc40086abc34c2a3d2f",
   "main": "workers/site.js",
   "compatibility_date": "2026-08-19",
   "assets": {

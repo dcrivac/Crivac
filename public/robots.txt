@@ -1,0 +1,9 @@
+# robots.txt for https://crivac.com/
+# Format: RFC 9309 (Robots Exclusion Protocol)
+# Public portfolio - full crawling is intentional.
+
+User-agent: *
+Allow: /
+Disallow:
+
+Sitemap: https://crivac.com/sitemap.xml
